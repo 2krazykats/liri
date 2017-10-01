@@ -1,4 +1,5 @@
 var twitKey = require("./keys.js");
+var spotifyKey = require("./spotify.key");
 var twitter = require("twitter");
 var spotify = require("node-spotify-api");
 var request = require("request");
@@ -26,22 +27,59 @@ function twitterCall() {
 	}
 
 // Set up the function for the Spotify API
-var songName = process.argv[3];
 
-function spotifyCall() {
-	var callSpotify = new spotify ({
-		id: '5eae46c9dd2e42dc8487202017259cbc',
-		secret: '13f77f281d1f4cdd9acfe9e4a1c64b8d'
-	});
+	var songName = '' ;
 
-callSpotify.search({
-	type: 'artist OR album OR track',
-	query: 'nothing'
-}, function(error, data) {
-	if(error) {
-		return console.log('Error occurred: ' + error);
+function spotifyCall(song) {
+
+	var getSpotifySong = new spotify(spotifyKey);
+
+	if (!process.argv[3]) {
+		songName = "The Sign";
+	} else {
+		for (var i=3; i<process.argv.length; i++) {
+		 songName += process.argv[i] + ' ';
+		}
 	}
-})
+	getSpotifySong.search({
+			type: 'track',
+			query: songName
+		}).then(function(response) {    
+			var jsonBody = JSON.stringify(response,null, 2);
+			// console.log(jsonBody);
+			var body = JSON.parse(jsonBody);
+			// console.log(body);
+
+//	So the instructions are not clear on whether we need to print out all the albums.
+	// I am choosing to print all retruned items
+			for (var i = 0; i < body.tracks.items.length; i++) {
+				console.log(`*********** record #${i} ***********`);
+				console.log(`Title: ${body.tracks.items[i].name}`);
+				console.log(`Album: ${body.tracks.items[i].album.name}`);
+
+				// There can be an array of artists
+				for (var j = 0; j < body.tracks.items[i].artists.length; j++) {
+					console.log(`Artist(s): ${body.tracks.items[i].artists[j].name}`);
+				}
+				console.log(`Preview URL: ${body.tracks.items[i].preview_url}`);
+				console.log("\n");
+			}
+		}).catch(function(err) {
+			console.log(err);
+		})
+
+	// getSpotifySong.search({
+	// 	type: 'track',
+	// 	query: songName
+	// }, function(error, data) {
+	// 	console.log(callSpotify.search(type: "track", query: "The Sign"));
+	// 	if(error) {
+	// 		return console.log('Error occurred: ' + error);
+	// } else {
+	// 	var spotifyJson = JSON.parse(body);
+	// 	console.log(spotifyJson);
+	// 	}
+	// });
 
 }
 
@@ -74,7 +112,6 @@ function omdbCall() {
 			console.log(`Movie: ${prettyTitle}`);
 			console.log(`Release date is: ${jsonBody.Released}`);
 			console.log(`Rating: ${jsonBody.Rated}`);
-			// console.log(`Rotten Tomatoes Rating: ${jsonBody.Ratings[1].Value}`);
 			console.log(`Rotten Tomatoes Rating: ${findRTValue(jsonBody)}`);
 			console.log(`Country(s): ${jsonBody.Country}`);
 			console.log(`Language: ${jsonBody.Language}`);
@@ -84,6 +121,7 @@ function omdbCall() {
 	});
 }
 
+// Search thru the JSON array and find the Rotten Tomatoes rating
 function findRTValue(jsonBody) {
 	for (var i = 0; i < 3; i++) {
 		if (jsonBody.Ratings[i].Source === "Rotten Tomatoes") {
@@ -92,13 +130,20 @@ function findRTValue(jsonBody) {
 	}
 }
 
+
 // Set up the function for do-what-it-says
 
+function fsCall() {
 
-
-
-
-
+	fs.readFile("random.txt", "utf8", function(error, data) {
+		if(!error) {
+			var parseData = data.split(",");
+			console.log(parseData);
+			action = parseData[0];
+			spotifyCall(parseData[1]);
+		} else console.log(error); 
+	});
+}
 
 // Main processing
 
