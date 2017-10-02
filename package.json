@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "inquirer": "^3.3.0",
+    "node-debugger": "^1.0.0",
     "node-spotify-api": "^1.0.7",
     "request": "^2.82.0",
     "spotify": "^0.3.0",

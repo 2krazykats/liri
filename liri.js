@@ -8,6 +8,7 @@ var action = process.argv[2];
 
 
 // Set up the function for the Twitter API
+// Also writes the results to log.txt
 function twitterCall() {
 
 		var newTwitKey = new twitter(twitKey);
@@ -16,12 +17,20 @@ function twitterCall() {
 		var params = {screen_name: 'entitledcats',
 						count: 20};
 
+		var delimiter ="\n============================\n";
+
 			newTwitKey.get("statuses/user_timeline", params, function(error, tweets, response) {
 				if(error) throw error;
 				// console.log(JSON.stringify(tweets, null, 2));
 				for (var i = 0; i < tweets.length; i++) {
-					console.log("============================");
+					console.log(delimiter);
 					console.log(tweets[i].text);
+
+					var delimPlusTweet = delimiter + tweets[i].text;
+
+					fs.appendFile("log.txt", delimPlusTweet, function(err) {
+						if(err) {return console.log(err);}
+					})
 				}
 		});
 	}
@@ -41,6 +50,7 @@ function spotifyCall(song) {
 		 songName += process.argv[i] + ' ';
 		}
 	}
+
 	getSpotifySong.search({
 			type: 'track',
 			query: songName
@@ -68,21 +78,20 @@ function spotifyCall(song) {
 			console.log(err);
 		})
 
-	// getSpotifySong.search({
-	// 	type: 'track',
-	// 	query: songName
-	// }, function(error, data) {
-	// 	console.log(callSpotify.search(type: "track", query: "The Sign"));
-	// 	if(error) {
-	// 		return console.log('Error occurred: ' + error);
-	// } else {
-	// 	var spotifyJson = JSON.parse(body);
-	// 	console.log(spotifyJson);
-	// 	}
-	// });
-
 }
 
+// Set up the function for do-what-it-says
+
+function fsCall() {
+
+	fs.readFile("random.txt", "utf8", function(error, data) {
+		if(!error) {
+			var parseData = data.split(",");
+			console.log(parseData[1]);
+			spotifyCall(parseData[1]);
+		} else console.log(error); 
+	});
+}
 
 
 // Set up the function for the OMDB API
@@ -131,19 +140,6 @@ function findRTValue(jsonBody) {
 }
 
 
-// Set up the function for do-what-it-says
-
-function fsCall() {
-
-	fs.readFile("random.txt", "utf8", function(error, data) {
-		if(!error) {
-			var parseData = data.split(",");
-			console.log(parseData);
-			action = parseData[0];
-			spotifyCall(parseData[1]);
-		} else console.log(error); 
-	});
-}
 
 // Main processing
 
