@@ -42,14 +42,18 @@ function twitterCall() {
 function spotifyCall(song) {
 
 	var getSpotifySong = new spotify(spotifyKey);
-
-	if (!process.argv[3]) {
+	if (!process.argv[3] && song === 'undefined') {
+		console.log("1st if statement");
 		songName = "The Sign";
-	} else {
+	} else if(process.argv[3] != null) {
+		console.log("2nd if statement");
 		for (var i=3; i<process.argv.length; i++) {
 		 songName += process.argv[i] + ' ';
 		}
-	}
+	} else if(song !== "undefined") {
+		console.log("3rd if statement");
+		songName = song;
+	} 
 
 	getSpotifySong.search({
 			type: 'track',
@@ -87,8 +91,8 @@ function fsCall() {
 	fs.readFile("random.txt", "utf8", function(error, data) {
 		if(!error) {
 			var parseData = data.split(",");
-			console.log(parseData[1]);
-			spotifyCall(parseData[1]);
+			var song = parseData[1];
+			spotifyCall(song);
 		} else console.log(error); 
 	});
 }
